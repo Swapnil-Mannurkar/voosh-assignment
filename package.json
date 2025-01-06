@@ -1,0 +1,8 @@
+{
+  "name": "voosh-assignment",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "repository": "https://github.com/Swapnil-Mannurkar/voosh-assignment.git",
+  "author": "Swapnil Mannurkar",
+  "license": "MIT"
+}
