@@ -1,5 +1,6 @@
 import { Router } from "express";
 import AdminController from "../controller/admin.controller";
+import { authMiddleware } from "../middleware/auth";
 
 class AdminRoutes {
   router = Router();
@@ -11,6 +12,8 @@ class AdminRoutes {
 
   initializeRoutes() {
     this.router.post("/signup", this.controller.createAdmin);
+    this.router.post("/login", this.controller.loginUser);
+    this.router.get("/logout", authMiddleware, this.controller.logoutUser);
   }
 }
 
