@@ -10,6 +10,7 @@ const UserSchema: Schema = new Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["ADMIN", "EDITOR", "VIEWER"], required: true },
+    tokenVersion: { type: Number, required: true, default: 0 },
     organisationId: { type: String, required: true },
   },
   {

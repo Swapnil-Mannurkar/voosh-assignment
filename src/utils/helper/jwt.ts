@@ -10,7 +10,7 @@ export const generateToken = (userDetails: ITokenUserDetails) => {
       throw new Error("JWT_SECRET environment variable not found.");
     }
 
-    return jwt.sign(userDetails, jwtSecret, { expiresIn: "2h" });
+    return jwt.sign(userDetails, jwtSecret, { expiresIn: 60 * 60 * 24 * 2 });
   } catch (err) {
     throw err;
   }

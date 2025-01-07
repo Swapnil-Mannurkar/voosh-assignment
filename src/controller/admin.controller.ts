@@ -1,17 +1,20 @@
 import { Request, Response } from "express";
 import User from "../models/user.model";
-import { IAdminSignup } from "../utils/types/admin";
 import { createResponse } from "../utils/helper/response-structure";
 import Organisation from "../models/organisation.model";
 import bcrypt from "bcryptjs";
-import { ITokenUserDetails, IUserResponse } from "../utils/types/user";
+import {
+  ITokenUserDetails,
+  IUserResponse,
+  IUserSignup,
+} from "../utils/types/user";
 import { checkUserMissingField } from "../utils/helper/missing-field";
 import { generateToken } from "../utils/helper/jwt";
 
 export default class AdminController {
   async createAdmin(req: Request, res: Response) {
     try {
-      const userDetails: IAdminSignup = req.body;
+      const userDetails: IUserSignup = req.body;
 
       if (!userDetails.email || !userDetails.password) {
         const response = createResponse(
@@ -63,12 +66,12 @@ export default class AdminController {
       return;
     } catch (error: any) {
       const response = createResponse(
-        400,
+        500,
         "User creation failed",
         null,
         error.message
       );
-      res.status(400).send(response);
+      res.status(500).send(response);
       return;
     }
   }
@@ -95,8 +98,11 @@ export default class AdminController {
 
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
-        const response = createResponse(401, "Incorrect password");
-        res.status(401).send(response);
+        const response = createResponse(
+          403,
+          "Forbidden Access/Operation not allowed. Incorrect password"
+        );
+        res.status(403).send(response);
         return;
       }
 
@@ -117,12 +123,12 @@ export default class AdminController {
       return;
     } catch (error: any) {
       const response = createResponse(
-        400,
+        500,
         "User login failed",
         null,
         error.message
       );
-      res.status(400).send(response);
+      res.status(500).send(response);
       return;
     }
   }
@@ -138,12 +144,12 @@ export default class AdminController {
       return;
     } catch (error: any) {
       const response = createResponse(
-        400,
+        500,
         "Failed to log out user",
         null,
         error.message
       );
-      res.status(400).send(response);
+      res.status(500).send(response);
       return;
     }
   }

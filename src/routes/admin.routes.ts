@@ -11,9 +11,9 @@ class AdminRoutes {
   }
 
   initializeRoutes() {
+    this.router.get("/logout", authMiddleware, this.controller.logoutUser);
     this.router.post("/signup", this.controller.createAdmin);
     this.router.post("/login", this.controller.loginUser);
-    this.router.get("/logout", authMiddleware, this.controller.logoutUser);
   }
 }
 
