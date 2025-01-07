@@ -1,8 +1,8 @@
 import { Application } from "express";
-import userRoutes from "./user.routes";
+import adminRoutes from "./admin.routes";
 
 export default class Routes {
   constructor(app: Application) {
-    app.use("/", userRoutes);
+    app.use("/", adminRoutes);
   }
 }
