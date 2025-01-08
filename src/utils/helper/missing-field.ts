@@ -20,3 +20,9 @@ export const checkUserPasswordMissingField = (
         : "Old Password"
   }`;
 };
+
+export const checkArtistsMissingField = (name: string, grammy: string) => {
+  return `Bad Request, Reason: Missing Field ${
+    !name && !grammy ? "Name and Grammy" : name && !grammy ? "Grammy" : "Name"
+  }`;
+};

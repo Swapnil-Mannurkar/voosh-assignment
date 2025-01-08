@@ -1,6 +1,6 @@
 import { Router } from "express";
 import AdminController from "../controller/admin.controller";
-import { authMiddleware } from "../middleware/auth";
+import authMiddleware from "../middleware/auth";
 
 class AdminRoutes {
   router = Router();

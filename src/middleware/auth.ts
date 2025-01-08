@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { createResponse } from "../utils/helper/response-structure";
 import { verifyToken } from "../utils/helper/jwt";
 
-export const authMiddleware = async (
+const authMiddleware = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -11,7 +11,7 @@ export const authMiddleware = async (
     const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
-      const response = createResponse(400, "No token provided");
+      const response = createResponse(401, "No token provided");
       res.status(401).send(response);
       return;
     }
@@ -31,3 +31,5 @@ export const authMiddleware = async (
     res.status(500).send(response);
   }
 };
+
+export default authMiddleware;
