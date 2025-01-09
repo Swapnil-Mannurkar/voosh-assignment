@@ -1,22 +1,26 @@
 import { ObjectId } from "mongodb";
 
-export interface IArtist extends IArtistCreationDetails {
+export interface IArtistModel extends IArtistCreation {
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IArtist extends IArtistCreation {
   _id: ObjectId;
-  artistId: string;
   createdAt: Date;
   updatedAt: Date;
   __v: number;
 }
 
-export interface IArtistCreationDetails {
+export interface IArtistCreation {
   name: string;
-  grammy: string;
+  grammy: number;
   hidden: boolean;
-  organisationId: string;
+  organisationId: ObjectId;
 }
 
 export interface IArtistUpdateDetails {
   name?: string;
-  grammy?: string;
+  grammy?: number;
   hidden?: boolean;
 }

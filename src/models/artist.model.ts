@@ -1,18 +1,23 @@
-import { model, Schema } from "mongoose";
-import * as uuid from "uuid";
+import { Document, model, Schema } from "mongoose";
+import { IArtistModel } from "../utils/types/artists";
+
+type IArtistDoc = Document | IArtistModel;
 
 const ArtistSchema = new Schema(
   {
-    artistId: { type: String, required: true, default: uuid.v4() },
-    name: { type: String, required: true },
-    grammy: { type: String, required: true },
+    grammy: { type: Number, required: true },
     hidden: { type: Boolean, required: true },
-    organisationId: { type: String, required: true },
+    name: { type: String, required: true },
+    organisationId: {
+      type: Schema.Types.ObjectId,
+      ref: "Organisation",
+      required: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const Artist = model("Artist", ArtistSchema);
+const Artist = model<IArtistDoc>("Artist", ArtistSchema);
 export default Artist;

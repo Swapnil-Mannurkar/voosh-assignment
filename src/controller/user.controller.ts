@@ -8,7 +8,7 @@ import {
   ITokenUserDetails,
   IUser,
   IUserPasswordUpdate,
-  IUserSignup,
+  IUserCreation,
 } from "../utils/types/user";
 import bcrypt from "bcryptjs";
 import User from "../models/user.model";
@@ -28,7 +28,7 @@ export default class UserController {
         organisationId: adminDetails.organisationId,
       })
         .skip(offset)
-        .limit(limit)) as IUser[];
+        .limit(limit)) as unknown as IUser[];
 
       if (role) {
         users = users.filter(
@@ -37,7 +37,7 @@ export default class UserController {
       }
 
       const filteredUserDetails = users.map((user) => ({
-        user_id: user.userId,
+        user_id: user._id,
         email: user.email,
         role: user.role,
         created_at: user.createdAt,
@@ -67,7 +67,7 @@ export default class UserController {
       const adminDetails: ITokenUserDetails = JSON.parse(
         req.headers.user as string
       );
-      const userDetails: IUserSignup = req.body;
+      const userDetails: IUserCreation = req.body;
 
       if (!userDetails.email || !userDetails.password) {
         const response = createResponse(
@@ -126,9 +126,7 @@ export default class UserController {
         return;
       }
 
-      const user: IUser | null = await User.findOne({
-        userId: userDetails.userId,
-      });
+      const user: IUser | null = await User.findById(userDetails.userId);
 
       if (!user) {
         const response = createResponse(404, "User not found");
@@ -150,14 +148,9 @@ export default class UserController {
         return;
       }
 
-      await User.updateOne(
-        { userId: userDetails.userId },
-        {
-          $set: {
-            password: await bcrypt.hash(passwordDetails.new_password, 10),
-          },
-        }
-      );
+      await User.findByIdAndUpdate(userDetails.userId, {
+        password: await bcrypt.hash(passwordDetails.new_password, 10),
+      });
 
       res.status(204).send();
       return;
@@ -189,9 +182,21 @@ export default class UserController {
         return;
       }
 
-      const dbUser: IUser | null = await User.findOne({
-        userId: providedUserId,
-      });
+      if (userDetails.role.toLowerCase() !== "admin") {
+        const response = createResponse(403, "Forbidden to delete user");
+        res.status(403).send(response);
+        return;
+      }
+
+      let dbUser: IUser;
+
+      try {
+        dbUser = (await User.findById(providedUserId)) as IUser;
+      } catch (err: any) {
+        const response = createResponse(404, "User not found");
+        res.status(500).send(response);
+        return;
+      }
 
       if (!dbUser) {
         const response = createResponse(404, "User not found");
@@ -199,16 +204,7 @@ export default class UserController {
         return;
       }
 
-      if (
-        providedUserId !== userDetails.userId &&
-        userDetails.role.toLowerCase() !== "admin"
-      ) {
-        const response = createResponse(403, "Forbidden to delete user");
-        res.status(403).send(response);
-        return;
-      }
-
-      await User.deleteOne({ userId: providedUserId });
+      await User.findByIdAndDelete(providedUserId);
 
       const response = createResponse(200, "User deleted successfully");
       res.status(200).send(response);

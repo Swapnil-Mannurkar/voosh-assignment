@@ -29,7 +29,12 @@ class UserRoutes {
       authMiddleware,
       this.controller.updatePassword
     );
-    this.router.delete("/:user_id", authMiddleware, this.controller.deleteUser);
+    this.router.delete(
+      "/:user_id",
+      authMiddleware,
+      verifyAdmin,
+      this.controller.deleteUser
+    );
   }
 }
 

@@ -1,3 +1,3 @@
-export interface IOrganisation {
+export interface IOrganisationModel {
   name: string;
 }

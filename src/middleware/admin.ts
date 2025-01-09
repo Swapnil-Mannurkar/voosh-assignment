@@ -16,10 +16,12 @@ const verifyAdmin = (req: Request, res: Response, next: NextFunction) => {
 
     if (parsedUser.role.toLowerCase() !== "admin") {
       const response = createResponse(
-        401,
-        "Forbidden Access/Operation not allowed."
+        403,
+        "Forbidden Access/Operation not allowed.",
+        null,
+        "You are not an admin to perform this operation"
       );
-      res.status(401).send(response);
+      res.status(403).send(response);
       return;
     }
 

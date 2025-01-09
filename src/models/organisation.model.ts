@@ -1,7 +1,7 @@
 import { Document, model, Schema } from "mongoose";
-import { IOrganisation } from "../utils/types/admin";
+import { IOrganisationModel } from "../utils/types/admin";
 
-type IOrganisationDoc = IOrganisation | Document;
+type IOrganisationDoc = Document | IOrganisationModel;
 
 const OrganisationSchema: Schema = new Schema(
   {

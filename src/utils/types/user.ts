@@ -1,30 +1,28 @@
 import { ObjectId } from "mongodb";
 
-export interface IUser {
-  userId: string;
-  email: string;
-  password: string;
-  role: "ADMIN" | "EDITOR" | "VIEWER";
+export interface IUserModel extends IUserCreation {
   tokenVersion: number;
-  organisationId: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface IUserResponse extends IUser {
+export interface IUser extends ITokenUserDetails {
   _id: ObjectId;
+  password: string;
+  createdAt: Date;
+  updatedAt: Date;
   __v: number;
 }
 
 export interface ITokenUserDetails {
-  userId: string;
+  userId: ObjectId;
   email: string;
   role: "ADMIN" | "EDITOR" | "VIEWER";
-  organisationId: string;
+  organisationId: ObjectId;
   tokenVersion: number;
 }
 
-export interface IUserSignup {
+export interface IUserCreation {
   email: string;
   password: string;
   organisation: string;

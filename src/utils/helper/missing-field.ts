@@ -26,3 +26,9 @@ export const checkArtistsMissingField = (name: string, grammy: string) => {
     !name && !grammy ? "Name and Grammy" : name && !grammy ? "Grammy" : "Name"
   }`;
 };
+
+export const checkAlbumMissingField = (name: string, year: number) => {
+  return `Bad Request, Reason: Missing Field ${
+    !name && !year ? "Name and Year" : name && !year ? "Year" : "Name"
+  }`;
+};

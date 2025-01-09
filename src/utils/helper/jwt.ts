@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { ITokenUserDetails, IUserResponse } from "../types/user";
+import { ITokenUserDetails, IUser } from "../types/user";
 import User from "../../models/user.model";
 
 export const generateToken = (userDetails: ITokenUserDetails) => {
@@ -27,10 +27,14 @@ export const verifyToken = async (token: string) => {
     const user = jwt.verify(token, jwtSecret) as ITokenUserDetails;
 
     if (!user) {
-      throw new Error("user not found!");
+      throw new Error("Invalid token!");
     }
 
-    const dbUser = (await User.findOne({ email: user.email })) as IUserResponse;
+    const dbUser: IUser | null = await User.findOne({ email: user.email });
+
+    if (!dbUser) {
+      throw new Error("User not found!");
+    }
 
     if (dbUser.tokenVersion !== user.tokenVersion) {
       throw new Error("Invalid token!");

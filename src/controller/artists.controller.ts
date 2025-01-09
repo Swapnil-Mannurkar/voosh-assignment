@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { createResponse } from "../utils/helper/response-structure";
 import { ITokenUserDetails } from "../utils/types/user";
-import { IArtist, IArtistCreationDetails } from "../utils/types/artists";
+import { IArtist, IArtistCreation } from "../utils/types/artists";
 import { checkArtistsMissingField } from "../utils/helper/missing-field";
 import Artist from "../models/artist.model";
 
@@ -13,14 +13,14 @@ class ArtistsController {
       );
       const limit = Number(req.query.limit) || 5;
       const offset = Number(req.query.offset) || 0;
-      const grammy = req.query.grammy as string;
+      const grammy = Number(req.query.grammy);
       const hidden = req.query.hidden as string;
 
-      let artists: IArtist[] = await Artist.find({
+      let artists = (await Artist.find({
         organisationId: userDetails.organisationId,
       })
         .skip(offset)
-        .limit(limit);
+        .limit(limit)) as unknown as IArtist[];
 
       if (grammy) {
         artists = artists.filter((artist) => artist.grammy === grammy);
@@ -33,7 +33,7 @@ class ArtistsController {
       }
 
       const filteredArtists = artists.map((artist) => ({
-        artist_id: artist.artistId,
+        artist_id: artist._id,
         name: artist.name,
         grammy: artist.grammy,
         hidden: artist.hidden,
@@ -65,10 +65,18 @@ class ArtistsController {
       );
       const artistId = req.params.artist_id;
 
-      const artist = await Artist.findOne({
-        artistId: artistId,
-        organisationId: userDetails.organisationId,
-      });
+      let artist: IArtist;
+
+      try {
+        artist = (await Artist.findOne({
+          _id: artistId,
+          organisationId: userDetails.organisationId,
+        })) as IArtist;
+      } catch (error) {
+        const response = createResponse(404, "Artist not found");
+        res.status(404).send(response);
+        return;
+      }
 
       if (!artist) {
         const response = createResponse(404, "Artist not found");
@@ -77,7 +85,7 @@ class ArtistsController {
       }
 
       const response = createResponse(200, "Artist fetched successfully", {
-        artist_id: artist.artistId,
+        artist_id: artist._id,
         name: artist.name,
         grammy: artist.grammy,
         hidden: artist.hidden,
@@ -101,14 +109,31 @@ class ArtistsController {
       const adminDetails: ITokenUserDetails = JSON.parse(
         req.headers.user as string
       );
-      const artistsDetails: IArtistCreationDetails = req.body;
+      const artistsDetails: IArtistCreation = req.body;
 
       if (!artistsDetails.name || !artistsDetails.grammy) {
         const response = createResponse(
           400,
-          checkArtistsMissingField(artistsDetails.name, artistsDetails.grammy)
+          checkArtistsMissingField(
+            artistsDetails.name,
+            `${artistsDetails.grammy}`
+          )
         );
         res.status(400).send(response);
+        return;
+      }
+
+      const artistExistsDetails = await Artist.findOne({
+        name: artistsDetails.name,
+        organisationId: adminDetails.organisationId,
+      });
+
+      if (artistExistsDetails) {
+        const response = createResponse(
+          409,
+          "Failed to create artist, name already exists."
+        );
+        res.status(409).send(response);
         return;
       }
 
@@ -149,7 +174,15 @@ class ArtistsController {
         return;
       }
 
-      const artistDetails = await Artist.findOne({ artistId });
+      let artistDetails: IArtist;
+
+      try {
+        artistDetails = (await Artist.findById(artistId)) as IArtist;
+      } catch (error) {
+        const response = createResponse(404, "Artist not found");
+        res.status(404).send(response);
+        return;
+      }
 
       if (!artistDetails) {
         const response = createResponse(404, "Artist not found");
@@ -157,15 +190,33 @@ class ArtistsController {
         return;
       }
 
-      if (artistDetails.organisationId !== adminDetails.organisationId) {
+      if (
+        artistDetails.organisationId.toString() !==
+        adminDetails.organisationId.toString()
+      ) {
         const response = createResponse(403, "Forbidden to update this artist");
         res.status(403).send(response);
         return;
       }
-      const updatedArtist: IArtistCreationDetails = req.body;
+
+      const updatedArtist: IArtistCreation = req.body;
+
+      const artistExistsDetails = await Artist.findOne({
+        name: updatedArtist.name,
+        organisationId: adminDetails.organisationId,
+      });
+
+      if (artistExistsDetails) {
+        const response = createResponse(
+          409,
+          "Failed to update artist, name already exists."
+        );
+        res.status(409).send(response);
+        return;
+      }
 
       await Artist.findOneAndUpdate(
-        { artistId: artistId, organisationId: adminDetails.organisationId },
+        { _id: artistId, organisationId: adminDetails.organisationId },
         updatedArtist
       );
 
@@ -197,7 +248,15 @@ class ArtistsController {
         return;
       }
 
-      const artistDetails = await Artist.findOne({ artistId });
+      let artistDetails: IArtist;
+
+      try {
+        artistDetails = (await Artist.findById(artistId)) as IArtist;
+      } catch (error) {
+        const response = createResponse(404, "Artist not found");
+        res.status(404).send(response);
+        return;
+      }
 
       if (!artistDetails) {
         const response = createResponse(404, "Artist not found");
@@ -205,14 +264,17 @@ class ArtistsController {
         return;
       }
 
-      if (artistDetails.organisationId !== adminDetails.organisationId) {
+      if (
+        artistDetails.organisationId.toString() !==
+        adminDetails.organisationId.toString()
+      ) {
         const response = createResponse(403, "Forbidden to delete this artist");
         res.status(403).send(response);
         return;
       }
 
       await Artist.findOneAndDelete({
-        artistId: artistId,
+        _id: artistId,
         organisationId: adminDetails.organisationId,
       });
 
@@ -220,10 +282,9 @@ class ArtistsController {
         200,
         `Artist: ${artistDetails.name} deleted successfully.`,
         {
-          artist_id: artistDetails.artistId,
+          artist_id: artistDetails._id,
         }
       );
-
       res.status(200).send(response);
       return;
     } catch (error: any) {

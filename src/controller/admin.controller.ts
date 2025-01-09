@@ -3,18 +3,14 @@ import User from "../models/user.model";
 import { createResponse } from "../utils/helper/response-structure";
 import Organisation from "../models/organisation.model";
 import bcrypt from "bcryptjs";
-import {
-  ITokenUserDetails,
-  IUserResponse,
-  IUserSignup,
-} from "../utils/types/user";
+import { ITokenUserDetails, IUser, IUserCreation } from "../utils/types/user";
 import { checkUserMissingField } from "../utils/helper/missing-field";
 import { generateToken } from "../utils/helper/jwt";
 
 export default class AdminController {
   async createAdmin(req: Request, res: Response) {
     try {
-      const userDetails: IUserSignup = req.body;
+      const userDetails: IUserCreation = req.body;
 
       if (!userDetails.email || !userDetails.password) {
         const response = createResponse(
@@ -40,11 +36,14 @@ export default class AdminController {
         name: userDetails.organisation,
       });
 
-      if (
-        existingOrganisation &&
-        userDetails.organisation !== "Default organisation"
-      ) {
-        userDetails.role = "VIEWER";
+      if (existingOrganisation) {
+        if (userDetails.organisation !== "Default organisation") {
+          const response = createResponse(409, "Organisation already exists");
+          res.status(409).send(response);
+          return;
+        } else {
+          userDetails.role = "VIEWER";
+        }
       }
 
       if (!existingOrganisation) {
@@ -54,11 +53,10 @@ export default class AdminController {
         userDetails.role = "ADMIN";
       }
 
-      userDetails.password = await bcrypt.hash(userDetails.password, 10);
-
       await User.create({
         ...userDetails,
         organisationId: existingOrganisation._id,
+        password: await bcrypt.hash(userDetails.password, 10),
       });
 
       const response = createResponse(201, "User created successfully");
@@ -89,7 +87,7 @@ export default class AdminController {
         return;
       }
 
-      const user = (await User.findOne({ email })) as IUserResponse;
+      const user: IUser | null = await User.findOne({ email });
       if (!user) {
         const response = createResponse(404, "User not found");
         res.status(404).send(response);
@@ -110,7 +108,7 @@ export default class AdminController {
         email: user.email,
         organisationId: user.organisationId,
         role: user.role,
-        userId: user.userId,
+        userId: user._id,
         tokenVersion: user.tokenVersion,
       });
 
@@ -137,7 +135,9 @@ export default class AdminController {
     try {
       const user: ITokenUserDetails = JSON.parse(req.headers.user as string);
 
-      await User.updateOne({ tokenVersion: user.tokenVersion + 1 });
+      await User.findByIdAndUpdate(user.userId, {
+        tokenVersion: user.tokenVersion + 1,
+      });
 
       const response = createResponse(200, "User logged out successfully");
       res.status(200).send(response);
