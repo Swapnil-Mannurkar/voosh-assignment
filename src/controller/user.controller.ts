@@ -9,26 +9,30 @@ import {
   IUser,
   IUserPasswordUpdate,
   IUserCreation,
+  IUserQuery,
 } from "../utils/types/user";
 import bcrypt from "bcryptjs";
 import User from "../models/user.model";
 
 export default class UserController {
+  roles = ["admin", "editor", "viewer"];
+
   async getAllUsers(req: Request, res: Response) {
     try {
       const limit = Number(req.query.limit) || 5;
       const offset = Number(req.query.offset) || 0;
       const role = req.query.role as string;
-      const roles = ["admin", "editor", "viewer"];
 
       const adminDetails: ITokenUserDetails = JSON.parse(
         req.headers.user as string
       );
 
-      let users: IUser[];
+      const query: IUserQuery = {
+        organisationId: adminDetails.organisationId,
+      };
 
       if (role) {
-        if (!roles.includes(role.toLowerCase())) {
+        if (!this.roles.includes(role.toLowerCase())) {
           const response = createResponse(
             400,
             "Invalid role. Please choose from ADMIN, EDITOR, or VIEWER"
@@ -37,19 +41,12 @@ export default class UserController {
           return;
         }
 
-        users = (await User.find({
-          organisationId: adminDetails.organisationId,
-          role: role.toUpperCase(),
-        })
-          .skip(offset)
-          .limit(limit)) as unknown as IUser[];
-      } else {
-        users = (await User.find({
-          organisationId: adminDetails.organisationId,
-        })
-          .skip(offset)
-          .limit(limit)) as unknown as IUser[];
+        query["role"] = role.toUpperCase();
       }
+
+      const users = (await User.find({ ...query })
+        .skip(offset)
+        .limit(limit)) as unknown as IUser[];
 
       const filteredUserDetails = users.map((user) => ({
         user_id: user._id,
@@ -83,10 +80,9 @@ export default class UserController {
         req.headers.user as string
       );
       const userDetails: IUserCreation = req.body;
-      const roles = ["admin", "editor", "viewer"];
 
       if (userDetails.role) {
-        if (!roles.includes(userDetails.role.toLowerCase())) {
+        if (!this.roles.includes(userDetails.role.toLowerCase())) {
           const response = createResponse(
             400,
             "Invalid role. Please choose from ADMIN, EDITOR, or VIEWER"

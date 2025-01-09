@@ -24,3 +24,9 @@ export interface IArtistUpdateDetails {
   grammy?: number;
   hidden?: boolean;
 }
+
+export interface IArtistQuery {
+  organisationId: ObjectId;
+  grammy?: number;
+  hidden?: string;
+}

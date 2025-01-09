@@ -40,3 +40,10 @@ export interface ITrackUpdate {
   hidden?: boolean;
   name?: string;
 }
+
+export interface ITrackQuery {
+  organisationId: ObjectId;
+  artistId?: string;
+  albumId?: string;
+  hidden?: string;
+}

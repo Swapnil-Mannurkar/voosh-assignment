@@ -4,6 +4,7 @@ import {
   IAlbum,
   IAlbumCreation,
   IAlbumPopulated,
+  IAlbumQuery,
   IAlbumUpdate,
 } from "../utils/types/album";
 import { checkAlbumMissingField } from "../utils/helper/missing-field";
@@ -23,22 +24,22 @@ class AlbumController {
       const artistId = req.query.artist_id as string;
       const hidden = req.query.hidden as string;
 
-      let albums = (await Album.find({
+      const albumQuery: IAlbumQuery = {
         organisationId: userDetails.organisationId,
-      })
-        .populate("artistId")
-        .skip(offset)
-        .limit(limit)) as unknown as IAlbumPopulated[];
+      };
 
       if (artistId) {
-        albums = albums.filter(
-          (album) => album.artistId._id.toString() === artistId
-        );
+        albumQuery["artistId"] = artistId;
       }
 
       if (hidden) {
-        albums = albums.filter((album) => album.hidden.toString() === hidden);
+        albumQuery["hidden"] = hidden;
       }
+
+      const albums = (await Album.find({ ...albumQuery })
+        .populate("artistId")
+        .skip(offset)
+        .limit(limit)) as unknown as IAlbumPopulated[];
 
       const filteredAlbums = albums.map((album) => ({
         album_id: album._id,

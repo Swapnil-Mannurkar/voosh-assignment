@@ -40,3 +40,9 @@ export interface IAlbumUpdate {
   year?: number;
   hidden?: boolean;
 }
+
+export interface IAlbumQuery {
+  organisationId: ObjectId;
+  artistId?: string;
+  hidden?: string;
+}

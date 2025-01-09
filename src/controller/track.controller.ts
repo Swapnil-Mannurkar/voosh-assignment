@@ -5,6 +5,7 @@ import {
   ITrack,
   ITrackCreation,
   ITrackPopulate,
+  ITrackQuery,
   ITrackUpdate,
 } from "../utils/types/track";
 import { checkTrackMissingField } from "../utils/helper/missing-field";
@@ -26,25 +27,27 @@ class TrackController {
       const albumId = req.query.album_id as string;
       const hidden = req.query.hidden as string;
 
-      const tracks = (await Track.find({
+      const trackQuery: ITrackQuery = {
         organisationId: userDetails.organisationId,
-      })
+      };
+
+      if (artistId) {
+        trackQuery["artistId"] = artistId;
+      }
+
+      if (albumId) {
+        trackQuery["albumId"] = albumId;
+      }
+
+      if (hidden) {
+        trackQuery["hidden"] = hidden;
+      }
+
+      const tracks = (await Track.find({ ...trackQuery })
         .populate("artistId")
         .populate("albumId")
         .skip(offset)
         .limit(limit)) as unknown as ITrackPopulate[];
-
-      if (artistId) {
-        tracks.filter((track) => track.artistId.toString() === artistId);
-      }
-
-      if (albumId) {
-        tracks.filter((track) => track.albumId.toString() === albumId);
-      }
-
-      if (hidden) {
-        tracks.filter((track) => track.hidden.toString() === hidden);
-      }
 
       const filteredTracks = tracks.map((track) => ({
         track_id: track._id,

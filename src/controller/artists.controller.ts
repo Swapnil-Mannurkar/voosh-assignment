@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { createResponse } from "../utils/helper/response-structure";
 import { ITokenUserDetails } from "../utils/types/user";
-import { IArtist, IArtistCreation } from "../utils/types/artists";
+import { IArtist, IArtistCreation, IArtistQuery } from "../utils/types/artists";
 import { checkArtistsMissingField } from "../utils/helper/missing-field";
 import Artist from "../models/artist.model";
 
@@ -16,21 +16,21 @@ class ArtistsController {
       const grammy = Number(req.query.grammy);
       const hidden = req.query.hidden as string;
 
-      let artists = (await Artist.find({
+      const artistQuery: IArtistQuery = {
         organisationId: userDetails.organisationId,
-      })
-        .skip(offset)
-        .limit(limit)) as unknown as IArtist[];
+      };
 
       if (grammy) {
-        artists = artists.filter((artist) => artist.grammy === grammy);
+        artistQuery["grammy"] = grammy;
       }
 
       if (hidden) {
-        artists = artists.filter(
-          (artist) => artist.hidden.toString() === hidden
-        );
+        artistQuery["hidden"] = hidden;
       }
+
+      let artists = (await Artist.find({ ...artistQuery })
+        .skip(offset)
+        .limit(limit)) as unknown as IArtist[];
 
       const filteredArtists = artists.map((artist) => ({
         artist_id: artist._id,
