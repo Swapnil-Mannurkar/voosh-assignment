@@ -1,3 +1,6 @@
+import { IFavoriteCategory } from "../types/favorite";
+import { ObjectId } from "mongodb";
+
 export const checkUserMissingField = (email: string, password: string) => {
   return `Bad Request, Reason: Missing Field ${
     !email && !password
@@ -40,5 +43,18 @@ export const checkTrackMissingField = (name: string, duration: number) => {
       : name && !duration
         ? "Duration"
         : "Name"
+  }`;
+};
+
+export const checkFavoriteMissingField = (
+  category: IFavoriteCategory,
+  itemId: ObjectId
+) => {
+  return `Bad Request, Reason: Missing Field ${
+    !category && !itemId
+      ? "Category and Item ID"
+      : category && !itemId
+        ? "Item ID"
+        : "Category"
   }`;
 };

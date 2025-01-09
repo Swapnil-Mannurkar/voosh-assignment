@@ -1,4 +1,7 @@
-import { model, Schema } from "mongoose";
+import { Document, model, Schema } from "mongoose";
+import { IFavoriteModel } from "../utils/types/favorite";
+
+type IFavoriteDoc = Document | IFavoriteModel;
 
 const FavoriteSchema = new Schema(
   {
@@ -8,6 +11,7 @@ const FavoriteSchema = new Schema(
       required: true,
     },
     itemId: { type: Schema.Types.ObjectId, required: true },
+    userId: { type: Schema.Types.ObjectId, required: true },
     name: { type: String, required: true },
     organisationId: {
       type: Schema.Types.ObjectId,
@@ -20,5 +24,5 @@ const FavoriteSchema = new Schema(
   }
 );
 
-const Favorite = model("Favorite", FavoriteSchema);
+const Favorite = model<IFavoriteDoc>("Favorite", FavoriteSchema);
 export default Favorite;
