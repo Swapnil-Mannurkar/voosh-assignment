@@ -33,8 +33,9 @@ A **Music Library Management API** that allows users within an organization to m
 
 ## Quick Summary of Endpoints:
 
-Below is a brief summary of all the endpoints and their key response codes: 0. [**GET BASEURL/Logout**](#0-get-logout---logout-a-user): 200, 400
+Below is a brief summary of all the endpoints and their key response codes: 
 
+0. [**GET BASEURL/Logout**](#0-get-logout---logout-a-user): 200, 400
 1. [**POST BASEURL/signup**](#1-post-signup---register-a-new-user): 201, 400, 409
 2. [**POST BASEURL/login**](#2-post-login---login-a-user): 200, 400, 404
 3. [**GET BASEURL/users**](#3-get-users---retrieve-all-users): 200, 400, 401
