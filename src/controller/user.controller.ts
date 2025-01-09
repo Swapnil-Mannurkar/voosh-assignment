@@ -19,6 +19,7 @@ export default class UserController {
       const limit = Number(req.query.limit) || 5;
       const offset = Number(req.query.offset) || 0;
       const role = req.query.role as string;
+      const roles = ["admin", "editor", "viewer"];
 
       const adminDetails: ITokenUserDetails = JSON.parse(
         req.headers.user as string
@@ -31,6 +32,15 @@ export default class UserController {
         .limit(limit)) as unknown as IUser[];
 
       if (role) {
+        if (!roles.includes(role.toLowerCase())) {
+          const response = createResponse(
+            400,
+            "Invalid role. Please choose from ADMIN, EDITOR, or VIEWER"
+          );
+          res.status(400).send(response);
+          return;
+        }
+
         users = users.filter(
           (user) => user.role.toLowerCase() === role.toLowerCase()
         );
@@ -39,7 +49,7 @@ export default class UserController {
       const filteredUserDetails = users.map((user) => ({
         user_id: user._id,
         email: user.email,
-        role: user.role,
+        role: user.role.toUpperCase(),
         created_at: user.createdAt,
       }));
 
@@ -88,7 +98,7 @@ export default class UserController {
       await User.create({
         ...userDetails,
         organisationId: adminDetails.organisationId,
-        role: userDetails.role || "VIEWER",
+        role: userDetails.role.toUpperCase() || "VIEWER",
         password: await bcrypt.hash(userDetails.password, 10),
       });
 
@@ -148,6 +158,15 @@ export default class UserController {
         return;
       }
 
+      if (passwordDetails.old_password === passwordDetails.new_password) {
+        const response = createResponse(
+          409,
+          "New password cannot be same as the old one"
+        );
+        res.status(409).send(response);
+        return;
+      }
+
       await User.findByIdAndUpdate(userDetails.userId, {
         password: await bcrypt.hash(passwordDetails.new_password, 10),
       });
@@ -168,7 +187,7 @@ export default class UserController {
 
   async deleteUser(req: Request, res: Response) {
     try {
-      const userDetails: ITokenUserDetails = JSON.parse(
+      const adminDetails: ITokenUserDetails = JSON.parse(
         req.headers.user as string
       );
       const providedUserId = req.params.user_id as string;
@@ -182,8 +201,11 @@ export default class UserController {
         return;
       }
 
-      if (userDetails.role.toLowerCase() !== "admin") {
-        const response = createResponse(403, "Forbidden to delete user");
+      if (adminDetails.userId.toString() === providedUserId) {
+        const response = createResponse(
+          403,
+          "Forbidden Access/Operation not allowed. Admin cannot be deleted"
+        );
         res.status(403).send(response);
         return;
       }

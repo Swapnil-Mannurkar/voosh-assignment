@@ -22,12 +22,9 @@ class FavoriteController {
       const category = req.params.category as IFavoriteCategory;
       const limit = Number(req.query.limit) || 5;
       const offset = Number(req.query.offset) || 0;
+      const categories = ["album", "artist", "track"];
 
-      if (
-        category !== "album" &&
-        category !== "artist" &&
-        category !== "track"
-      ) {
+      if (!categories.includes(category.toLowerCase())) {
         const response = createResponse(
           400,
           "Category does not exist, category must be either album, track or artist"

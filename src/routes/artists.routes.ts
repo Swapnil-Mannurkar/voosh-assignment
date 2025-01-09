@@ -1,7 +1,7 @@
 import { Router } from "express";
 import authMiddleware from "../middleware/auth";
-import verifyAdmin from "../middleware/admin";
 import ArtistsController from "../controller/artists.controller";
+import verifyAdminOrEditor from "../middleware/editorAdmin";
 
 class ArtistsRoutes {
   router = Router();
@@ -21,19 +21,19 @@ class ArtistsRoutes {
     this.router.post(
       "/add-artist",
       authMiddleware,
-      verifyAdmin,
+      verifyAdminOrEditor,
       this.controller.createArtists
     );
     this.router.put(
       "/:artist_id",
       authMiddleware,
-      verifyAdmin,
+      verifyAdminOrEditor,
       this.controller.updateArtist
     );
     this.router.delete(
       "/:artist_id",
       authMiddleware,
-      verifyAdmin,
+      verifyAdminOrEditor,
       this.controller.deleteArtist
     );
   }

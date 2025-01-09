@@ -1,7 +1,7 @@
 import { Router } from "express";
 import authMiddleware from "../middleware/auth";
 import TrackController from "../controller/track.controller";
-import verifyAdmin from "../middleware/admin";
+import verifyAdminOrEditor from "../middleware/editorAdmin";
 
 class TrackRoutes {
   router = Router();
@@ -17,19 +17,19 @@ class TrackRoutes {
     this.router.post(
       "/add-track",
       authMiddleware,
-      verifyAdmin,
+      verifyAdminOrEditor,
       this.controller.createTrack
     );
     this.router.put(
       "/:track_id",
       authMiddleware,
-      verifyAdmin,
+      verifyAdminOrEditor,
       this.controller.updateTrack
     );
     this.router.delete(
       "/:track_id",
       authMiddleware,
-      verifyAdmin,
+      verifyAdminOrEditor,
       this.controller.deleteTrack
     );
   }

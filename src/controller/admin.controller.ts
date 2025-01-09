@@ -12,6 +12,15 @@ export default class AdminController {
     try {
       const userDetails: IUserCreation = req.body;
 
+      if (!userDetails.organisation) {
+        const response = createResponse(
+          400,
+          "Bad Request, Reason: Missing Field organisation"
+        );
+        res.status(400).send(response);
+        return;
+      }
+
       if (!userDetails.email || !userDetails.password) {
         const response = createResponse(
           400,
@@ -37,21 +46,16 @@ export default class AdminController {
       });
 
       if (existingOrganisation) {
-        if (userDetails.organisation !== "Default organisation") {
-          const response = createResponse(409, "Organisation already exists");
-          res.status(409).send(response);
-          return;
-        } else {
-          userDetails.role = "VIEWER";
-        }
+        const response = createResponse(409, "Organisation already exists");
+        res.status(409).send(response);
+        return;
       }
 
-      if (!existingOrganisation) {
-        existingOrganisation = await Organisation.create({
-          name: userDetails.organisation,
-        });
-        userDetails.role = "ADMIN";
-      }
+      existingOrganisation = await Organisation.create({
+        name: userDetails.organisation,
+      });
+
+      userDetails.role = "ADMIN";
 
       await User.create({
         ...userDetails,
