@@ -78,6 +78,25 @@ export default class UserController {
         req.headers.user as string
       );
       const userDetails: IUserCreation = req.body;
+      const roles = ["admin", "editor", "viewer"];
+
+      if (userDetails.role) {
+        if (!roles.includes(userDetails.role.toLowerCase())) {
+          const response = createResponse(
+            400,
+            "Invalid role. Please choose from ADMIN, EDITOR, or VIEWER"
+          );
+          res.status(400).send(response);
+          return;
+        }
+      } else {
+        const response = createResponse(
+          400,
+          "Bad Request, Reason: Missing Field role"
+        );
+        res.status(400).send(response);
+        return;
+      }
 
       if (!userDetails.email || !userDetails.password) {
         const response = createResponse(
@@ -98,7 +117,7 @@ export default class UserController {
       await User.create({
         ...userDetails,
         organisationId: adminDetails.organisationId,
-        role: userDetails.role.toUpperCase() || "VIEWER",
+        role: userDetails.role.toUpperCase(),
         password: await bcrypt.hash(userDetails.password, 10),
       });
 
@@ -213,7 +232,10 @@ export default class UserController {
       let dbUser: IUser;
 
       try {
-        dbUser = (await User.findById(providedUserId)) as IUser;
+        dbUser = (await User.findOne({
+          _id: providedUserId,
+          organisationId: adminDetails.organisationId,
+        })) as IUser;
       } catch (err: any) {
         const response = createResponse(404, "User not found");
         res.status(500).send(response);

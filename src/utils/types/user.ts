@@ -1,6 +1,10 @@
 import { ObjectId } from "mongodb";
 
-export interface IUserModel extends IUserCreation {
+export interface IUserModel {
+  email: string;
+  role: "ADMIN" | "EDITOR" | "VIEWER";
+  organisationId: ObjectId;
+  password: string;
   tokenVersion: number;
   createdAt: Date;
   updatedAt: Date;
