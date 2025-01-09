@@ -2,9 +2,10 @@ import mongoose from "mongoose";
 
 const connectMongoDB = async () => {
   try {
+    console.log(process.env.NODE_ENV === "DEV" ? "test" : "music");
     const uri = process.env.MONGO_URI as string;
     await mongoose.connect(uri, {
-      dbName: "music",
+      dbName: process.env.NODE_ENV === "DEV" ? "test" : "music",
     });
     console.log("MongoDB connected successfully!");
   } catch (error) {
