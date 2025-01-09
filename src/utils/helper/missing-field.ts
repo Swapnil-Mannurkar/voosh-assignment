@@ -32,3 +32,13 @@ export const checkAlbumMissingField = (name: string, year: number) => {
     !name && !year ? "Name and Year" : name && !year ? "Year" : "Name"
   }`;
 };
+
+export const checkTrackMissingField = (name: string, duration: number) => {
+  return `Bad Request, Reason: Missing Field ${
+    !name && !duration
+      ? "Name and Duration"
+      : name && !duration
+        ? "Duration"
+        : "Name"
+  }`;
+};

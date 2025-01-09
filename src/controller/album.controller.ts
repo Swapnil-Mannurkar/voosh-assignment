@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { createResponse } from "../utils/helper/response-structure";
 import {
+  IAlbum,
   IAlbumCreation,
   IAlbumPopulated,
   IAlbumUpdate,
@@ -49,7 +50,7 @@ class AlbumController {
 
       const response = createResponse(
         200,
-        "Artists retrieved successfully",
+        "Albums retrieved successfully",
         filteredAlbums
       );
       res.status(200).send(response);
@@ -57,7 +58,7 @@ class AlbumController {
     } catch (error: any) {
       const response = createResponse(
         500,
-        "Failed to get all artists",
+        "Failed to get all albums",
         null,
         error.message
       );
@@ -132,6 +133,7 @@ class AlbumController {
         res.status(400).send(response);
         return;
       }
+
       let artistDetails: IArtist;
 
       try {
@@ -212,11 +214,9 @@ class AlbumController {
         return;
       }
 
-      let album: IAlbumPopulated;
+      let album: IAlbum;
       try {
-        album = (await Album.findById(albumId).populate(
-          "artistId"
-        )) as unknown as IAlbumPopulated;
+        album = (await Album.findById(albumId)) as unknown as IAlbum;
       } catch (err) {
         const response = createResponse(404, "Album not found");
         res.status(404).send(response);
@@ -229,15 +229,6 @@ class AlbumController {
         return;
       }
 
-      if (album.name === updatAlbumDetails.name) {
-        const response = createResponse(
-          409,
-          "Failed to update album, name already exists."
-        );
-        res.status(409).send(response);
-        return;
-      }
-
       if (
         album.organisationId.toString() !==
         adminDetails.organisationId.toString()
@@ -247,6 +238,15 @@ class AlbumController {
           "Forbidden. You are not authorized to update this album."
         );
         res.status(403).send(response);
+        return;
+      }
+
+      if (album.name === updatAlbumDetails.name) {
+        const response = createResponse(
+          409,
+          "Failed to update album, name already exists."
+        );
+        res.status(409).send(response);
         return;
       }
 
@@ -278,11 +278,9 @@ class AlbumController {
         return;
       }
 
-      let album: IAlbumPopulated;
+      let album: IAlbum;
       try {
-        album = (await Album.findById(albumId).populate(
-          "artistId"
-        )) as unknown as IAlbumPopulated;
+        album = (await Album.findById(albumId)) as unknown as IAlbum;
       } catch (err) {
         const response = createResponse(404, "Album not found");
         res.status(404).send(response);
@@ -309,7 +307,10 @@ class AlbumController {
 
       await Album.findByIdAndDelete(albumId);
 
-      const response = createResponse(200, "Album deleted successfully");
+      const response = createResponse(
+        200,
+        `Album: ${album.name} deleted successfully`
+      );
       res.status(200).send(response);
       return;
     } catch (error: any) {
