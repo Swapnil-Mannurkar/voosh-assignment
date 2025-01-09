@@ -25,11 +25,7 @@ export default class UserController {
         req.headers.user as string
       );
 
-      let users = (await User.find({
-        organisationId: adminDetails.organisationId,
-      })
-        .skip(offset)
-        .limit(limit)) as unknown as IUser[];
+      let users: IUser[];
 
       if (role) {
         if (!roles.includes(role.toLowerCase())) {
@@ -41,9 +37,18 @@ export default class UserController {
           return;
         }
 
-        users = users.filter(
-          (user) => user.role.toLowerCase() === role.toLowerCase()
-        );
+        users = (await User.find({
+          organisationId: adminDetails.organisationId,
+          role: role.toUpperCase(),
+        })
+          .skip(offset)
+          .limit(limit)) as unknown as IUser[];
+      } else {
+        users = (await User.find({
+          organisationId: adminDetails.organisationId,
+        })
+          .skip(offset)
+          .limit(limit)) as unknown as IUser[];
       }
 
       const filteredUserDetails = users.map((user) => ({
